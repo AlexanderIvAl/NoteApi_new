@@ -89,7 +89,22 @@ class TestUsers(TestCase):
         """
         Редактирование пользователя
         """
-        pass
+        user_data = {
+            "username": "TestUser",
+            "password": "TestUser"
+        }
+        user = UserModel(**user_data)
+        user.save()
+        edit_user_data = {
+            "password": "new password",
+            "is_staff": True
+        }
+        self.client.put(f'/users/{user.id}',
+                               data=json.dumps(user_data),
+                               content_type='application/json')
+        edited_user = UserModel.query.get(user.id)
+        self.assertTrue(edited_user.verify_password(edit_user_data["password"]))
+        self.assertEqual(edit_user_data["is_staff"], edited_user.is_staff)
 
     def test_delete_user(self):
         """
@@ -143,10 +158,11 @@ class TestNotes(TestCase):
                                data=json.dumps(note_data),
                                content_type='application/json')
         data = json.loads(res.data)
+        # note = NoteModel
         self.assertEqual(data["text"], note_data["text"])
         self.assertFalse(data["private"])
 
-    def test_get_notes(self):
+    def test_get_notes(self): 
         notes_data = [
             {
                 "text": 'Test note 1',
@@ -248,7 +264,10 @@ class TestNotes(TestCase):
 
     def test_edit_note(self):
         """
-        Редактирование заметки
+        Редактирование заметки 
+        создаем объект через орм
+        отправляем пут запрос
+        получаем измененный объект через орм
         """
 
     def test_delete_note(self):

@@ -1,4 +1,4 @@
-from api import auth, abort, g, Resource, reqparse
+from api import auth, abort, g, Resource, reqparse, db
 from api.models.note import NoteModel
 from api.schemas.note import note_schema, notes_schema
 
@@ -37,11 +37,19 @@ class NoteResource(Resource):
         note.save()
         return note_schema.dump(note), 200
 
+    @auth.login_required
     def delete(self, note_id):
         """
         Пользователь может удалять ТОЛЬКО свои заметки
         """
-        raise NotImplemented("Метод не реализован")
+        author = g.user
+        note_dict = NoteModel.query.get(note_id)
+        if not note_dict:
+            abort(404, error=f"note {note_id} not found")
+        if note_dict.author != author:
+            abort(403, error=f"Forbidden")
+        db.session.delete(note_dict)
+        note_dict.save()
         return note_dict, 200
 
 
@@ -57,7 +65,7 @@ class NotesListResource(Resource):
         parser.add_argument("text", required=True)
         # Подсказка: чтобы разобраться с private="False",
         #   смотрите тут: https://flask-restful.readthedocs.io/en/latest/reqparse.html#request-parsing
-        parser.add_argument("private", required=True)
+        parser.add_argument("private", type=bool, required=True)
         note_data = parser.parse_args()
         note = NoteModel(author_id=author.id, **note_data)
         note.save()
