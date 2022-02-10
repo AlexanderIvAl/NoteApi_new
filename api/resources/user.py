@@ -1,6 +1,6 @@
 from api import Resource, abort, reqparse, auth
 from api.models.user import UserModel
-from api.schemas.user import user_schema, users_schema, UserSchema
+from api.schemas.user import user_schema, users_schema, UserSchema, UserRequestSchema
 from flask_apispec.views import MethodResource
 from flask_apispec import marshal_with, use_kwargs, doc
 
@@ -22,7 +22,8 @@ class UserResource(MethodResource):
             abort(403, error=f"User with id={user_id} not found")
         return user, 200
 
-    @auth.login_required(role="admin")
+    # @auth.login_required(role="admin")
+    @marshal_with(UserSchema, code=200)
     def put(self, user_id):
         # language=YAML
         """
@@ -62,25 +63,31 @@ class UserResource(MethodResource):
         user = UserModel.query.get(user_id)
         user.username = user_data["username"]
         user.save()
-        return user_schema.dump(user), 200
+        return user, 200
 
-    @auth.login_required
+    # @auth.login_required
+    @marshal_with(UserSchema, code=200)
     def delete(self, user_id):
         raise NotImplemented  # не реализовано!
 
 
-class UsersListResource(Resource):
+@doc(description='Api for notes.', tags=['Users'])
+class UsersListResource(MethodResource):
+    @doc(summary="List of users")
+    @marshal_with(UserSchema, code=200)
     def get(self):
         users = UserModel.query.all()
         return users_schema.dump(users), 200
 
-    def post(self):
-        parser = reqparse.RequestParser()
-        parser.add_argument("username", required=True)
-        parser.add_argument("password", required=True)
-        user_data = parser.parse_args()
-        user = UserModel(**user_data)
+    @use_kwargs(UserRequestSchema, location=('json'))
+    @marshal_with(UserSchema, code=201)
+    def post(self, **kwargs):
+        # parser = reqparse.RequestParser()
+        # parser.add_argument("username", required=True)
+        # parser.add_argument("password", required=True)
+        # user_data = parser.parse_args()
+        user = UserModel(**kwargs)
         user.save()
         if not user.id:
             abort(400, error=f"User with username:{user.username} already exist")
-        return user_schema.dump(user), 201
+        return user, 201

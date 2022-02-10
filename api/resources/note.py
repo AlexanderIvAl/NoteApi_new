@@ -1,8 +1,10 @@
 from api import auth, abort, g, Resource, reqparse, db
 from api.models.note import NoteModel
 from api.schemas.note import note_schema, notes_schema
+from flask_apispec.views import MethodResource
+from flask_apispec import marshal_with, use_kwargs, doc
 
-
+@doc(description='Api for notes.', tags=['Note'])
 class NoteResource(Resource):
     @auth.login_required
     def get(self, note_id):
