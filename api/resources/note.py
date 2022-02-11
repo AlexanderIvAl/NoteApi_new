@@ -36,7 +36,7 @@ class NoteResource(Resource):
             abort(403, error=f"Forbidden")
         if note_data["text"]:
             note.text = note_data["text"]
-        if note_data["private"]:
+        if note_data["private"] is not None:
             note.private = note_data["private"]
         note.save()
         return note_schema.dump(note), 200

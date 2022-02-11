@@ -299,20 +299,22 @@ class TestNotes(TestCase):
         note = NoteModel(author_id=self.user.id, **note_data)
         note.save()
         
-        edit_user_data = {
+        edit_note_data = {
             "text": "New_text",
             "private": False
         }    
-        self.client.put(f'/notes/{note.id}',
-                        data=json.dumps(edit_user_data),
-                        content_type='application/json')
+        res = self.client.put(f'/notes/{note.id}',
+                        data=json.dumps(edit_note_data),
+                        content_type='application/json',
+                        headers=self.headers)
          
-        res = self.client.get(f'/notes/{note.id}', headers=self.headers)
-        edit_data = json.loads(res.data)
+        edit_data = NoteModel.query.get(note.id)
+        # res = self.client.get(f'/notes/{note.id}', headers=self.headers)
+        # edit_data = json.loads(res.data)
  
-    
-        self.assertFalse(edit_data["private"])
-        self.assertEqual(edit_user_data["text"], edit_data["text"])
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(edit_data.private)
+        self.assertEqual(edit_note_data["text"], edit_data.text)
 
 
 
