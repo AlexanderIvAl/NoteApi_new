@@ -15,6 +15,8 @@ class NoteResource(Resource):
         note = NoteModel.query.get(note_id)
         if not note:
             abort(404, error=f"Note with id={note_id} not found")
+        if note.author != author:
+            abort(403, error=f"Forbidden")
         return note_schema.dump(note), 200
 
     @auth.login_required
@@ -28,14 +30,14 @@ class NoteResource(Resource):
         parser.add_argument("private", type=bool)
         note_data = parser.parse_args()
         note = NoteModel.query.get(note_id)
-        if not note:
+        if note is None:
             abort(404, error=f"note {note_id} not found")
         if note.author != author:
             abort(403, error=f"Forbidden")
-        note.text = note_data["text"]
-
-        note.private = note_data.get("private") or note.private
-
+        if note_data["text"]:
+            note.text = note_data["text"]
+        if note_data["private"]:
+            note.private = note_data["private"]
         note.save()
         return note_schema.dump(note), 200
 
