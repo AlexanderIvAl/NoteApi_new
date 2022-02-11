@@ -1,8 +1,10 @@
 from api import auth, abort, g, Resource, reqparse, db
 from api.models.note import NoteModel
-from api.schemas.note import note_schema, notes_schema
+from api.models.tag import TagModel
+from api.schemas.note import note_schema, notes_schema, 
 from flask_apispec.views import MethodResource
 from flask_apispec import marshal_with, use_kwargs, doc
+from webargs import fields
 
 @doc(description='Api for notes.', tags=['Note'])
 class NoteResource(Resource):
@@ -74,3 +76,16 @@ class NotesListResource(Resource):
         note = NoteModel(author_id=author.id, **note_data)
         note.save()
         return note_schema.dump(note), 201
+
+@doc(tags=["Notes"])
+class NoteAddTagResource(MethodResource):
+    @doc(summary="Add tegs to Note")
+    @use_kwargs({"tags": fields.List(fields.Int)})
+    def put(self, note_id, **kwargs):
+        # print(kwargs)
+        note = NoteModel.query.get(note_id)
+        for tag in kwargs["tags"]:
+            tag = TagModel.query.get(tag.id)
+            note.tags.append(tag)
+        note.save()
+        return {}
