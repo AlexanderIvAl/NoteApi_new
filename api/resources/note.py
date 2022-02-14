@@ -61,7 +61,7 @@ class NoteResource(MethodResource):
         return note_dict, 200
 
 
-class NotesListResource(Resource):
+class NotesListResource(MethodResource):
     def get(self):
         notes = NoteModel.query.all()
         return notes_schema.dump(notes), 200
@@ -90,4 +90,12 @@ class NoteAddTagResource(MethodResource):
             tag = TagModel.query.get(tag.id)
             note.tags.append(tag)
         note.save()
+        return {}
+
+@doc(tags=["Notes"])
+class NotesFilterResource(MethodResource):
+    # GET: /notes/filter?tags=[tag-1, tag-2, ...]
+    @use_kwargs({"tags": fields.List(fields.Str())}, location="query")
+    def get(self, **kwargs):
+        ...
         return {}
