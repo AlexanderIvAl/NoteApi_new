@@ -1,6 +1,7 @@
 from api import Resource, abort, reqparse, auth
 from api.models.tag import TagModel
 from api.models.note import NoteModel
+from api.schemas.user import UserSchema
 from api.schemas.note import NoteSchema
 from api.schemas.tag import TagRequestSchema, TagSchema, TagModel
 from flask_apispec.views import MethodResource
@@ -10,9 +11,9 @@ from webargs import fields
 
 @doc(tags=['Notes'])
 class NoteSetTagsResource(MethodResource):
-    
+    @use_kwargs({"tags": fields.List(fields.Int())}, location=('json'))
     @marshal_with(TagSchema, code=200)
-    def get(self, tag_id):
+    def get(self, tag_id, **kwargs):
         user = TagModel.query.get(user_id)
         if user:
             abort(403, error=f"User with id={user_id} not found")

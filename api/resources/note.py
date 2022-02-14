@@ -1,39 +1,41 @@
 from api import auth, abort, g, Resource, reqparse, db
 from api.models.note import NoteModel
 from api.models.tag import TagModel
-from api.schemas.note import note_schema, notes_schema, 
+from api.schemas.note import note_schema, notes_schema, NoteSchema, NoteModel 
 from flask_apispec.views import MethodResource
 from flask_apispec import marshal_with, use_kwargs, doc
 from webargs import fields
 
 @doc(description='Api for notes.', tags=['Note'])
-class NoteResource(Resource):
+class NoteResource(MethodResource):
     @auth.login_required
-    def get(self, note_id):
+    @marshal_with(NoteSchema, code=200)
+    def get(self, **kwargs):
         """
         Пользователь может получить ТОЛЬКО свою заметку
         """
         author = g.user
-        note = NoteModel.query.get(note_id)
+        note = NoteModel(**kwargs)
         if not note:
-            abort(404, error=f"Note with id={note_id} not found")
+            abort(404, error=f"Note with id={note.id} not found")
         if note.author != author:
             abort(403, error=f"Forbidden")
-        return note_schema.dump(note), 200
+        return note, 200
 
     @auth.login_required
-    def put(self, note_id):
+    @marshal_with(NoteSchema, code=200)
+    def put(self, **kwargs):
         """
         Пользователь может редактировать ТОЛЬКО свои заметки
         """
         author = g.user
-        parser = reqparse.RequestParser()
-        parser.add_argument("text", required=True)
-        parser.add_argument("private", type=bool)
-        note_data = parser.parse_args()
-        note = NoteModel.query.get(note_id)
+        # parser = reqparse.RequestParser()
+        # parser.add_argument("text", required=True)
+        # parser.add_argument("private", type=bool)
+        note_data = NoteModel(**kwargs)
+        note = NoteModel.query.get(note_data.id)
         if note is None:
-            abort(404, error=f"note {note_id} not found")
+            abort(404, error=f"note {note_data.id} not found")
         if note.author != author:
             abort(403, error=f"Forbidden")
         if note_data["text"]:
@@ -41,9 +43,10 @@ class NoteResource(Resource):
         if note_data["private"] is not None:
             note.private = note_data["private"]
         note.save()
-        return note_schema.dump(note), 200
+        return note_data, 200
 
     @auth.login_required
+    @marshal_with(NoteSchema, code=200)
     def delete(self, note_id):
         """
         Пользователь может удалять ТОЛЬКО свои заметки
@@ -54,8 +57,7 @@ class NoteResource(Resource):
             abort(404, error=f"note {note_id} not found")
         if note_dict.author != author:
             abort(403, error=f"Forbidden")
-        db.session.delete(note_dict)
-        note_dict.save()
+        note_dict.delete()
         return note_dict, 200
 
 

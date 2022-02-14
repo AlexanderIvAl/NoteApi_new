@@ -13,3 +13,13 @@ class Config:
     RESTFUL_JSON = {
         'ensure_ascii': False,
     }
+    
+    # APISPEC_SPEC = APISpec(
+    #     title='Notes Project',
+    #     version='v1',
+    #     plugins=[MarshmallowPlugin()],
+    #     openapi_version='2.0.0'
+    # )
+    # APISPEC_SWAGGER_URL = '/swagger', # URI API Doc JSON
+    # APISPEC_SWAGGER_UI_URL = '/swagger-ui'# URI UI of API Doc
+    

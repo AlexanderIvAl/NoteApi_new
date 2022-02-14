@@ -99,10 +99,12 @@ class TestUsers(TestCase):
             "password": "new password",
             "is_staff": True
         }
-        self.client.put(f'/users/{user.id}',
+        res = self.client.put(f'/users/{user.id}',
                                data=json.dumps(edit_user_data),
                                content_type='application/json')
+        
         edited_user = UserModel.query.get(user.id)
+        self.assertEqual(res.status_code, 200)
         self.assertTrue(edited_user.verify_password(edit_user_data["password"]))
         self.assertEqual(edit_user_data["is_staff"], edited_user.is_staff)
 
@@ -161,9 +163,11 @@ class TestNotes(TestCase):
                                data=json.dumps(note_data),
                                content_type='application/json')
         data = json.loads(res.data)
-        # note = NoteModel
+        note = NoteModel.query.get(1)
         self.assertEqual(data["text"], note_data["text"])
         self.assertFalse(data["private"])
+        self.assertEqual(note.text, note_data["text"])
+        self.assertFalse(note.private)
 
     def test_get_notes(self): 
         """
@@ -191,6 +195,13 @@ class TestNotes(TestCase):
         """
         Проверка получения записи по id, через код ответа сервера и сравнения отправленных и запрашиваемых данных.
         """
+        user_alex_data = {
+            "username": 'alex',
+            'password': 'alex'
+        }
+        user_alex = UserModel(**user_alex_data)
+        user_alex.save()
+        
         notes_data = [
             {
                 "text": 'Test note 1',
@@ -205,6 +216,7 @@ class TestNotes(TestCase):
         for note_data in notes_data:
             note = NoteModel(author_id=self.user.id, **note_data)
             note.save()
+            
         res = self.client.get('/notes/1', headers=self.headers)
         data = json.loads(res.data)
 
