@@ -5,6 +5,7 @@ from api.schemas.note import note_schema, notes_schema, NoteSchema, NoteModel
 from flask_apispec.views import MethodResource
 from flask_apispec import marshal_with, use_kwargs, doc
 from webargs import fields
+from helpers.shortcuts import get_or_404
 
 @doc(description='Api for notes.', tags=['Note'])
 class NoteResource(MethodResource):
@@ -33,9 +34,7 @@ class NoteResource(MethodResource):
         # parser.add_argument("text", required=True)
         # parser.add_argument("private", type=bool)
         note_data = NoteModel(**kwargs)
-        note = NoteModel.query.get(note_data.id)
-        if note is None:
-            abort(404, error=f"note {note_data.id} not found")
+        note = get_or_404(NoteModel, note_id)
         if note.author != author:
             abort(403, error=f"Forbidden")
         note.text = note_data["text"]
@@ -97,6 +96,7 @@ class NoteAddTagResource(MethodResource):
 class NotesFilterResource(MethodResource):
     # GET: /notes/filter?tags=[tag-1, tag-2, ...]
     @use_kwargs({"tags": fields.List(fields.Str())}, location="query")
+    @marshal_with(NoteSchema(many=True), code=200)
     def get(self, **kwargs):
-        ...
-        return {}
+        notes = NoteModel.query.join(NoteModel.tags).filter(TagModel.name.in_(kwargs["tags"])).all()
+        return notes
