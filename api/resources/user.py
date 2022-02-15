@@ -1,3 +1,4 @@
+import logging
 from api import Resource, abort, reqparse, auth, g
 from api.models.user import UserModel
 from api.schemas.user import user_schema, users_schema, UserSchema, UserRequestSchema
@@ -109,4 +110,5 @@ class UsersListResource(MethodResource):
         user.save()
         if not user.id:
             abort(400, error=f"User with username:{user.username} already exist")
+        logging.info("User create successful")
         return user, 201

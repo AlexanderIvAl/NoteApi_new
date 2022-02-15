@@ -8,6 +8,11 @@ class TagSchema(ma.SQLAlchemyAutoSchema):
         model = TagModel
         fields = ("id", "name",)
 
+    _links = ma.Hyperlinks({
+        'self': ma.URLFor('tokensource', values=dict(token_id="<id>")),
+        'collection': ma.URLFor('tokenlistresource')
+    })
+
 
 # Десериализация запроса(request)
 class TagRequestSchema(ma.SQLAlchemySchema):
