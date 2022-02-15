@@ -48,7 +48,7 @@ class TestUsers(TestCase):
         self.assertEqual(data["username"], user_data["username"])
 
     def test_user_not_found_by_id(self):
-        response = self.client.get('/users/2')
+        response = self.client.get('/users/20')
         self.assertEqual(response.status_code, 404)
 
     def test_users_get(self):
@@ -76,7 +76,7 @@ class TestUsers(TestCase):
         """
         Получение несуществующего пользователя
         """
-        res = self.client.get('/users/1')
+        res = self.client.get('/users/10')
         self.assertEqual(res.status_code, 404)
 
     def test_unique_username(self):
@@ -107,7 +107,7 @@ class TestUsers(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertTrue(edited_user.verify_password(edit_user_data["password"]))
         self.assertEqual(edit_user_data["is_staff"], edited_user.is_staff)
-
+    
     def test_delete_user(self):
         """
         Удаление пользователя

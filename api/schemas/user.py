@@ -2,18 +2,18 @@ from api import ma
 from api.models.user import UserModel
 
 # Серелизация
-#       schema        flask-restful
-# object ------>  dict ----------> json
+#       schema         flask-restful
+# object ------>  dict --------------> json
 
 # Десериализация
-#    schema    class Model
-# json --> dict --> object
+#       schema          class Model
+# json --------> dict --------------> object
 
 # Сериализация ответа(response)
 class UserSchema(ma.SQLAlchemySchema):
     class Meta:
         model = UserModel
-        fields = ('id', 'username', "is_staff", "role")
+        fields = ("id", "username", "is_staff", "role", "password")
 
 
 # Десериализация запроса(request)

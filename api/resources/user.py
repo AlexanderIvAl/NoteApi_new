@@ -5,8 +5,10 @@ from flask_apispec.views import MethodResource
 from flask_apispec import marshal_with, use_kwargs, doc
 
 
+
 @doc(description='Api for notes.', tags=['Users'])
 class UserResource(MethodResource):
+    @marshal_with(UserSchema, code=200)
     def get(self, user_id):
     # language=YAML
         """
@@ -17,12 +19,13 @@ class UserResource(MethodResource):
         """
 
         user = UserModel.query.get(user_id)
-        if user is None:
-            abort(403, error=f"User with id={user_id} not found")
-        return user_schema.dump(user), 200
+        if not user:
+            abort(404, error=f"User with id={user_id} not found")
+        return user, 200
 
     # @auth.login_required(role="admin")
     @marshal_with(UserSchema, code=200)
+    @use_kwargs(UserSchema)
     def put(self, user_id, **kwargs):
         # language=YAML
         """
@@ -54,23 +57,30 @@ class UserResource(MethodResource):
                             type: boolean
                             description: user is staff
                             default: false
-
+   
         """
-        print(**kwargs)
-        user_data = UserModel(**kwargs)
         user = UserModel.query.get(user_id)
-        if user is None:
+        
+        if not user:
             abort(404, error=f"User with id={user_id} not found")
-        if user_data["username"]:
-            user.username = user_data["username"]
-        if user_data["password"]:
-            user.hash_password(user_data["password"])
-        if user_data["is_staff"]:
-            user.is_staff = user_data["is_staff"]
-        if user_data["role"]:
-            user.role = user_data["role"]
-        user.save()
-        return user_data, 200
+        for key, value in kwargs.items():
+            setattr(user, key, value)
+        user.save()           
+        return user, 200
+        # user_data = UserModel(**kwargs)
+        # user = UserModel.query.get(user_id)
+        # if not user:
+        #     abort(404, error=f"User with id={user_id} not found")
+        # if user_data["username"]:
+        #     user.username = user_data["username"]
+        # if user_data["password"]:
+        #     user.hash_password(user_data["password"])
+        # if user_data["is_staff"]:
+        #     user.is_staff = user_data["is_staff"]
+        # if user_data["role"]:
+        #     user.role = user_data["role"]
+        # user.save()
+        # return user_data, 200
 
     # @auth.login_required(role="admin")
     @marshal_with(UserSchema, code=200)
@@ -84,7 +94,6 @@ class UserResource(MethodResource):
         user.delete()
         return user, 200
         
-
 
 @doc(description='Api for notes.', tags=['Users'])
 class UsersListResource(MethodResource):

@@ -1,5 +1,7 @@
 import os
 
+from apispec import APISpec
+
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -15,11 +17,13 @@ class Config:
     }
     
     # APISPEC_SPEC = APISpec(
-    #     title='Notes Project',
-    #     version='v1',
-    #     plugins=[MarshmallowPlugin()],
-    #     openapi_version='2.0.0'
+    #         title='Notes Project',
+    #         version='v1',
+    #         plugins=[MarshmallowPlugin()],
+    #         securityDefinitions=security_definitions,
+    #         security=[],
+    #         openapi_version='2.0.0',
     # )
-    # APISPEC_SWAGGER_URL = '/swagger', # URI API Doc JSON
-    # APISPEC_SWAGGER_UI_URL = '/swagger-ui'# URI UI of API Doc
+    # APISPEC_SWAGGER_URL = '/swagger',  # URI API Doc JSON
+    # APISPEC_SWAGGER_UI_URL = '/swagger-ui'  # URI UI of API Doc
     
