@@ -31,4 +31,4 @@ class Config:
     
     APISPEC_SWAGGER_URL = '/swagger'  # URI API Doc JSON
     APISPEC_SWAGGER_UI_URL = '/swagger-ui'  # URI UI of API Doc
-    
+    LANGUAGES = ['en', 'ru']

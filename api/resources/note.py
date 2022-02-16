@@ -76,6 +76,15 @@ class NotesListResource(MethodResource):
         return note, 201
 
 @doc(tags=["Notes"])
+class NoteRestoreResource(MethodResource):
+    @doc(summary="Restore note")
+    @marshal_with(NoteSchema)
+    def put(self, note_id):
+        note = get_or_404(NoteModel, note_id)
+        note.restore()
+        return note, 200
+
+@doc(tags=["Notes"])
 class NoteAddTagResource(MethodResource):
     @doc(summary="Add tegs to Note")
     @use_kwargs({"tags": fields.List(fields.Int)})
