@@ -1,5 +1,6 @@
 from api import api, app, docs
-from api.resources.note import NoteResource, NotesListResource, NoteAddTagResource, NotesFilterResource
+# from api.resources.note import NoteResource, NotesListResource, NoteAddTagResource, NotesFilterResource
+from api.resources import note
 from api.resources.user import UserResource, UsersListResource
 from api.resources.auth import TokenResource
 from api.resources.tag import TagsResource, TagsListResource
@@ -22,16 +23,19 @@ api.add_resource(UserResource,
 api.add_resource(TokenResource,
                  '/auth/token')  # GET
 
-api.add_resource(NotesListResource,
+api.add_resource(note.NotesListResource,
                  '/notes',  # GET, POST
                  )
-api.add_resource(NoteResource,
+api.add_resource(note.NoteResource,
                  '/notes/<int:note_id>',  # GET, PUT, DELETE
                  )
-api.add_resource(NoteAddTagResource,
+api.add_resource(note.NoteAddTagResource,
                  '/notes/<int:note_id>/tags')  # PUT
-api.add_resource(NotesFilterResource,
+api.add_resource(note.NotesFilterResource,
                  '/notes/filter')  # GET
+
+api.add_resource(note.NoteRestoreResource,
+                 '/notes/<int:note_id>/restore')  # PUT
 
 api.add_resource(TagsListResource,
                  '/tags')  # GET, POST
@@ -40,11 +44,13 @@ api.add_resource(TagsResource,
 
 docs.register(UserResource)
 docs.register(UsersListResource)
-docs.register(NoteResource)
-docs.register(NotesListResource)
-docs.register(NoteAddTagResource)
-docs.register(NotesFilterResource)
+docs.register(note.NoteResource)
+docs.register(note.NotesListResource)
+docs.register(note.NoteAddTagResource)
+docs.register(note.NotesFilterResource)
 docs.register(TagsResource)
+docs.register(note.NoteRestoreResource)
+
 
 
 if __name__ == '__main__':

@@ -34,17 +34,27 @@ class NoteResource(MethodResource):
         note.save()
         return note_schema.dump(note), 200
 
-    @auth.login_required
-    @doc(summary="Delete note by ID", description="The user can delete his own note")
+    @doc(summary="Delete note", description="Note to archive")
     @doc(security=[{"basicAuth": []}])
-    @marshal_with(NoteSchema, code=200)
+    @auth.login_required
     def delete(self, note_id):
-        author = g.user
-        note_dict = get_or_404(NoteModel, note_id)
-        if note_dict.author != author:
-            abort(403, error=f"Forbidden")
-        note_dict.delete()
-        return note_dict, 200
+        """
+        Пользователь может удалять ТОЛЬКО свои заметки
+        """
+        auth_user = g.user
+        note = get_or_404(NoteModel, note_id)
+        if auth_user != note.author:
+            abort(403)
+
+        note.delete()
+        return {}, 204
+# DELETE
+# 1. Заметка удалена archived --> True
+# 2. Можно удалить только логин под автором
+#   2.1. Если удалить не под Автором, то 403
+#   2.2. Если удалить под автором, то 204
+#  404
+# 401 - без логина
 
 @doc(tags=["Notes"])
 class NotesListResource(MethodResource):

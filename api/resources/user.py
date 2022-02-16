@@ -29,42 +29,11 @@ class UserResource(MethodResource):
     @marshal_with(UserSchema, code=200)
     @use_kwargs(UserRequestSchema, location=("json"))
     def put(self, user_id, **kwargs):
-        # language=YAML
-        """
-        Get User by id
-        ---
-        tags:
-            - Users
-        parameters:
-            - in: path
-              name: user_id
-              type: integer
-              required: true
-              default: 1
-        responses:
-            200:
-                description: A single user item
-                schema:
-                    id: User
-                    properties:
-                        id:
-                            type: integer
-                            description: user id
-                            default: 1
-                        username:
-                            type: string
-                            description: The name of the user
-                            default: Steven Wilson
-                        is_staff:
-                            type: boolean
-                            description: user is staff
-                            default: false
-   
-        """
-        author = g.user
+        
+        # author = g.user
         user = get_or_404(UserModel, user_id)
-        if user.author != author:
-            abort(403, error=f"Forbidden")
+        # if user.author != author:
+        #     abort(403, error=f"Forbidden")
         for key, value in kwargs.items():
             setattr(user, key, value)
         user.save()           
