@@ -1,83 +1,69 @@
-from api import auth, abort, g, Resource, reqparse, db
+from api import auth, abort, g
 from api.models.note import NoteModel
 from api.models.tag import TagModel
-from api.schemas.note import note_schema, notes_schema, NoteSchema, NoteModel 
+from api.schemas.note import note_schema, notes_schema, NoteSchema, NoteModel, NoteRequestSchema 
 from flask_apispec.views import MethodResource
 from flask_apispec import marshal_with, use_kwargs, doc
 from webargs import fields
-from helpers.shortcuts import get_or_404
+from helpers.shortcots import get_or_404
 
-@doc(description='Api for notes.', tags=['Note'])
+@doc(description='Api for notes.', tags=['Notes'])
 class NoteResource(MethodResource):
+    @doc(summary="Get note by ID", description="The user can ONLY get his own note")
+    @doc(security=[{"basicAuth": []}])
     @auth.login_required
-    @marshal_with(NoteSchema, code=200)
-    def get(self, **kwargs):
-        """
-        Пользователь может получить ТОЛЬКО свою заметку
-        """
+    def get(self, note_id):
         author = g.user
-        note = NoteModel(**kwargs)
-        if not note:
-            abort(404, error=f"Note with id={note.id} not found")
-        if note.author != author:
-            abort(403, error=f"Forbidden")
-        return note, 200
-
-    @auth.login_required
-    @marshal_with(NoteSchema, code=200)
-    def put(self, **kwargs):
-        """
-        Пользователь может редактировать ТОЛЬКО свои заметки
-        """
-        author = g.user
-        # parser = reqparse.RequestParser()
-        # parser.add_argument("text", required=True)
-        # parser.add_argument("private", type=bool)
-        note_data = NoteModel(**kwargs)
         note = get_or_404(NoteModel, note_id)
         if note.author != author:
             abort(403, error=f"Forbidden")
-        note.text = note_data["text"]
-
-        if note_data.get("private") is not None:
-            note.private = note_data.get("private")
-        
+        return note_schema.dump(note), 200
+   
+    @auth.login_required
+    @doc(summary="Edit note by ID", description="The user can ONLY edit his own note")
+    @doc(security=[{"basicAuth": []}])
+    @marshal_with(NoteSchema, code=201)
+    @use_kwargs(NoteRequestSchema, location=("json"))
+    def put(self, note_id, **kwargs):
+        author = g.user
+        note = get_or_404(NoteModel, note_id)
+        if note.author != author:
+            abort(403, error=f"Forbidden")
+        for key, value in kwargs.items():
+            setattr(note, key, value)
         note.save()
-        return note_data, 200
+        return note_schema.dump(note), 200
 
     @auth.login_required
+    @doc(summary="Delete note by ID", description="The user can delete his own note")
+    @doc(security=[{"basicAuth": []}])
     @marshal_with(NoteSchema, code=200)
     def delete(self, note_id):
-        """
-        Пользователь может удалять ТОЛЬКО свои заметки
-        """
         author = g.user
-        note_dict = NoteModel.query.get(note_id)
-        if not note_dict:
-            abort(404, error=f"note {note_id} not found")
+        note_dict = get_or_404(NoteModel, note_id)
         if note_dict.author != author:
             abort(403, error=f"Forbidden")
         note_dict.delete()
         return note_dict, 200
 
-
+@doc(tags=["Notes"])
 class NotesListResource(MethodResource):
+    @doc(summary="List of all note")
     def get(self):
         notes = NoteModel.query.all()
         return notes_schema.dump(notes), 200
 
+    @doc(summary="Create note", description="Create new Note for current auth User")
+    @doc(security=[{"basicAuth": []}])
+    @doc(responses={400: {"description": 'Bad request'}})
+    @marshal_with(NoteSchema, code=201)
+    @use_kwargs(NoteRequestSchema, location=("json"))
     @auth.login_required
-    def post(self):
+    def post(self, **kwargs):
         author = g.user
-        parser = reqparse.RequestParser()
-        parser.add_argument("text", required=True)
-        # Подсказка: чтобы разобраться с private="False",
-        #   смотрите тут: https://flask-restful.readthedocs.io/en/latest/reqparse.html#request-parsing
-        parser.add_argument("private", type=bool, required=True)
-        note_data = parser.parse_args()
-        note = NoteModel(author_id=author.id, **note_data)
+        note = NoteModel(author_id=author.id, **kwargs)
         note.save()
-        return note_schema.dump(note), 201
+        return note, 201
 
 @doc(tags=["Notes"])
 class NoteAddTagResource(MethodResource):

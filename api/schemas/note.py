@@ -23,6 +23,14 @@ class NoteSchema(ma.SQLAlchemySchema):
         'collection': ma.URLFor('noteslistresource')
     })
 
+# Десериализация запроса(request)
+class NoteRequestSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = NoteModel
+
+    text = ma.Str()
+    private = ma.Bool()
+
 
 note_schema = NoteSchema()
 notes_schema = NoteSchema(many=True)
