@@ -9,6 +9,7 @@ from helpers.shortcots import get_or_404
 
 @doc(description='Api for notes.', tags=['Notes'])
 class NoteResource(MethodResource):
+    @marshal_with(NoteSchema, code=201)
     @doc(summary="Get note by ID", description="The user can ONLY get his own note")
     @doc(security=[{"basicAuth": []}])
     @auth.login_required
@@ -17,7 +18,8 @@ class NoteResource(MethodResource):
         note = get_or_404(NoteModel, note_id)
         if note.author != author:
             abort(403, error=f"Forbidden")
-        return note_schema.dump(note), 200
+        # note = note_schema.dump(note)
+        return note, 200
    
     @auth.login_required
     @doc(summary="Edit note by ID", description="The user can ONLY edit his own note")
@@ -32,11 +34,12 @@ class NoteResource(MethodResource):
         for key, value in kwargs.items():
             setattr(note, key, value)
         note.save()
-        return note_schema.dump(note), 200
+        return note, 200
 
     @doc(summary="Delete note", description="Note to archive")
     @doc(security=[{"basicAuth": []}])
     @auth.login_required
+    @marshal_with(NoteSchema, code=201)
     def delete(self, note_id):
         """
         Пользователь может удалять ТОЛЬКО свои заметки
@@ -59,9 +62,10 @@ class NoteResource(MethodResource):
 @doc(tags=["Notes"])
 class NotesListResource(MethodResource):
     @doc(summary="List of all note")
+    @marshal_with(NoteSchema(many=True), code=201)
     def get(self):
         notes = NoteModel.query.all()
-        return notes_schema.dump(notes), 200
+        return notes, 200
 
     @doc(summary="Create note", description="Create new Note for current auth User")
     @doc(security=[{"basicAuth": []}])

@@ -31,6 +31,7 @@ class NoteRequestSchema(ma.SQLAlchemySchema):
 
     text = ma.Str()
     private = ma.Bool()
+    archived = ma.Bool()
 
 
 note_schema = NoteSchema()
