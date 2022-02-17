@@ -15,9 +15,10 @@ class NoteResource(MethodResource):
     @auth.login_required
     def get(self, note_id):
         author = g.user
-        note = get_or_404(NoteModel, note_id)
-        if note.author != author:
-            abort(403, error=f"Forbidden")
+        # note = get_or_404(NoteModel, note_id)
+        note = NoteModel.not_archive().get(note_id)
+        if note is None:
+            abort(404)
         # note = note_schema.dump(note)
         return note, 200
    
@@ -64,7 +65,7 @@ class NotesListResource(MethodResource):
     @doc(summary="List of all note")
     @marshal_with(NoteSchema(many=True), code=201)
     def get(self):
-        notes = NoteModel.query.all()
+        notes = NoteModel.not_archive().all()
         return notes, 200
 
     @doc(summary="Create note", description="Create new Note for current auth User")

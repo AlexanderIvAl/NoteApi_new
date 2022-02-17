@@ -6,9 +6,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_marshmallow import Marshmallow
 from flask_httpauth import HTTPBasicAuth
+from flask_restful import reqparse, request
+from flask_apispec.extension import FlaskApiSpec
 from flask_babel import Babel
-from flask_restful import request
-
 
 
 from flask_apispec.extension import FlaskApiSpec
@@ -30,7 +30,8 @@ auth = HTTPBasicAuth()
 docs = FlaskApiSpec(app)
 babel = Babel(app)
 
-
+with app.app_context():
+    from commands import *
 
 # swagger = Swagger(app)
 
