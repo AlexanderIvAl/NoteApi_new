@@ -186,7 +186,7 @@ class TestNotes(TestCase):
             note.save()
 
         res = self.client.get('/notes', headers=self.headers)
-        data = json.loads(res.data)
+        data = NoteModel.query.get(res.id)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(len(data), 2)
@@ -337,21 +337,27 @@ class TestNotes(TestCase):
         notes_data = [
             {
                 "text": 'Test note 1',
+                "author_id": 2
             },
             {
                 "text": 'Test note 2',
+                "author_id": 1
             }
         ]
-        ids = []
+        user_data = {
+            "username": "User-2",
+            "password": "1234"
+        }
+        UserModel(**user_data).save()
         for note_data in notes_data:
-            note = NoteModel(author_id=self.user.id, **note_data)
+            note = NoteModel(**note_data)
             note.save()
-            ids.append(note.id)
-
+            
+        self.assertFalse(note.archived)
         res = self.client.delete('/notes/2', headers=self.headers)
-        data = json.loads(res.data)
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data["text"], notes_data[1]["text"])
+        self.assertEqual(res.status_code, 204)
+        note = NoteModel.query.get(2)
+        self.assertTrue(note.archived)
 
     def test_delete_not_found_note(self):
         """

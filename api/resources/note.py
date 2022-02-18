@@ -9,7 +9,7 @@ from helpers.shortcots import get_or_404
 
 @doc(description='Api for notes.', tags=['Notes'])
 class NoteResource(MethodResource):
-    @marshal_with(NoteSchema, code=201)
+    @marshal_with(NoteSchema)
     @doc(summary="Get note by ID", description="The user can ONLY get his own note")
     @doc(security=[{"basicAuth": []}])
     @auth.login_required
@@ -40,7 +40,6 @@ class NoteResource(MethodResource):
     @doc(summary="Delete note", description="Note to archive")
     @doc(security=[{"basicAuth": []}])
     @auth.login_required
-    @marshal_with(NoteSchema, code=201)
     def delete(self, note_id):
         """
         Пользователь может удалять ТОЛЬКО свои заметки
